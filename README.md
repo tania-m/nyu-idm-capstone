@@ -7,7 +7,8 @@ This repository contains only the code for the p5.js sketch displayed on the web
 ## Links
 [Project site](https://sites.google.com/view/tmn-idm-capstone/home). 
 [Artwork](https://tania.grumpycoder.net/client/) (Needs some time to load; Click on the canvas to start the soundscape.).
-[Assets credits](https://sites.google.com/view/tmn-idm-capstone/project-blog).
+
+[Assets credits](https://sites.google.com/view/tmn-idm-capstone/project-blog/credits).
 
 ## Details
 - The ideation process is described [here](https://sites.google.com/view/tmn-idm-capstone/ideation).
