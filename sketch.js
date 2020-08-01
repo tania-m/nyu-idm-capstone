@@ -1,12 +1,3 @@
-// TODO: Movement must be a bit slower
-// TODO: Add some random behavior to the movement, so it looks uncontrolled
-// TODO: Animate all leg ends
-// TODO: Animate spine
-// TODO: 3 lines depending on song ampliture, in front of head, lighter colors
-// TODO: 3 lines (continued), at back of head, darker colors
-// TODO: Lines near head should become red (the nearer to the head, the more red)
-
-
 // music constants
 let mainTrack, snowForest, ecg;
 let thunder = new Array(4);
@@ -33,19 +24,29 @@ const BOTH_SIDES = false;
 // setup ==============================================================================
 function setup() {
 	noFill();
+
+	// round line endings
 	strokeCap(ROUND);
 	strokeJoin(ROUND);
 
+	// to limit speed on different machines
+	// (some machines have more computing power... so the animation there was too fast)
 	frameRate(15);
 
+	// canvas
 	let cnv = createCanvas(1800, 1000);
+
+	// music must be started via a user action, here a simple canvas press
 	cnv.mousePressed(canvasPressed);
 
+	// to display waveforms
 	amplitude = new p5.Amplitude();
 	fft = new p5.FFT();
 
+	// colors and color palettes
 	ecgBeatColor = color(0, 52, 92);
 
+	// for blues
 	backgroundBluesPalette = [
 		color(35, 101, 158),
 		color(27, 79, 125),
@@ -57,6 +58,7 @@ function setup() {
 		color(34, 92, 169)
 	];
 
+	// for gray towards yellow
 	backgroundGeneralPalette = [
 		color(10, 17, 23),
 		color(83, 95, 107),
@@ -68,6 +70,7 @@ function setup() {
 		color(255, 228, 207)
 	];
 
+	// for reds towards yellow
 	redPalette = [
 		color(168, 5, 0),
 		color(229, 106, 107),
@@ -78,13 +81,18 @@ function setup() {
 }
 
 // images and audio should be pre-loaded
+// Regarding urls: urls changed on deployed version - this is for local dev!
 function preload() {
+	// pictures/collages
 	backgroundImage = loadImage('http://localhost:3000/images/background-30.png');
 	foregroundImage = loadImage('http://localhost:3000/images/foreground.png');
 
+	// music
 	mainTrack = loadSound('http://localhost:3000/music/depressing-music-track.mp3');
 	snowForest = loadSound('http://localhost:3000/music/falling-snow.wav');
 	ecg = loadSound('http://localhost:3000/music/ecg.wav');
+
+	// random thunder sounds
 	thunder[0] = loadSound('http://localhost:3000/music/thunder-1.wav');
 	thunder[1] = loadSound('http://localhost:3000/music/thunder-2.wav');
 	thunder[2] = loadSound('http://localhost:3000/music/thunder-3.wav');
@@ -95,7 +103,7 @@ function preload() {
 // starting music must be an explicit user action
 // in this case it will be a press on the canvas
 function canvasPressed() {
-	if (!mainMusicPlaying) {
+	if (!mainMusicPlaying) { // main soundscape, composed of 3 tracks
 		//console.log('Starting music...');
 		userStartAudio();
 		mainTrack.setVolume(0.80);
@@ -106,7 +114,8 @@ function canvasPressed() {
 		snowForest.loop();
 		mainMusicPlaying = true;
 		//console.log('Main track loop started!');
-	} else {
+	} else { // stop music when canvas is pressed a second time
+		// (but a running random thunder sound will finish playing in its entirety)
 		mainTrack.stop();
 		snowForest.stop();
 		ecg.stop();
@@ -120,7 +129,9 @@ function playRandomThunder() {
 	if (mainMusicPlaying) {
 
 		let playThunderEvent = getRandomInt(0, 1000);
-		if (playThunderEvent < 25) {
+		if (playThunderEvent < 25) { 
+			// 25 << 1000, to not have new thunder sounds starting all the time!
+			// distribution is uniform (js default)
 			console.log("Has to play a thunder sound!")
 			let chosenThunderSound = getRandomInt(0, 3);
 			thunder[chosenThunderSound].setVolume(0.95);
@@ -162,6 +173,9 @@ function drawMainCharacter() {
 	// (x4, y4): second anchor
 	// (x2, y2): first control point (pulls the curve towards it)
 	// (x3, y3): second control point (pulls the curve towards it)
+
+	// bezier curves are the (hidden) skeleton for the dancer
+	// random broken noisy lines will actually move around the bezier curve
 
 	// right leg
 	drawRightLeg();
@@ -212,6 +226,9 @@ function drawRightLeg(){
 	rightLegCoordinates.yControl2 = rightLegCoordinates.yControl2 + getRandomInt(-4, 4);
 
 	// drawing points to give some depth
+
+	// the last params chosen so to have an animation that looks good (no special logic here)
+	// but renders impossible to rather use calls in a loop
 	colorPalette.colorLerp = 0.9;
 	drawPoints(rightLegCoordinates.xBegin,
 		rightLegCoordinates.yBegin,
@@ -270,6 +287,9 @@ function drawRightLeg(){
 		10, 90, colorPalette);
 
 	// drawing the shaping line
+
+	// the last params chosen so to have an animation that looks good (no special logic here)
+	// but renders impossible to rather use calls in a loop
 	let level = 2,
 		lineSteps = 8;
 	colorPalette.strokeWeight = 5;
@@ -332,6 +352,9 @@ function drawBodyLine(){
 	bodyLine.yEnd = bodyLine.yEnd + getRandomInt(-10, 10);
 
 	// drawing points to give some depth
+
+	// the last params chosen so to have an animation that looks good (no special logic here)
+	// but renders impossible to rather use calls in a loop
 	colorPalette.strokeWeight = 1;
 	colorPalette.colorLerp = 0.95;
 	drawPoints(bodyLine.xBegin,
@@ -421,8 +444,11 @@ function drawBodyLine(){
 
 	stroke(backgroundBluesPalette[0]);
 
-	// draw shaping line
+	// draw shaping lines
 	//bezier(480, 320, 450, 350, 435, 675, 680, 820);
+
+	// the last params chosen so to have an animation that looks good (no special logic here)
+	// but renders impossible to rather use calls in a loop
 	let level = 2;
 	colorPalette.strokeWeight = 3;
 	drawNoiseLine(bodyLine.xBegin,
@@ -489,15 +515,18 @@ function drawHead() {
 		yControl2: 320 + 40,
 		xEnd: 420 + 35,
 		yEnd: 200 + 40
-	}
+	};
 	/*
 	bezier(headCoordinates.xBegin, headCoordinates.yBegin, 
 			headCoordinates.xControl1, headCoordinates.yControl1, 
 			headCoordinates.xControl2, headCoordinates.yControl2, 
 			headCoordinates.xEnd, headCoordinates.yEnd);
 	*/
-	// x1, y1, x2, y2, x3, y3, x4, y4, steps, maxDistance, palette, fuzz=1, side = -1
 
+	// draw noisy lines
+
+	// the last params chosen so to have an animation that looks good (no special logic here)
+	// but renders impossible to rather use calls in a loop
 	let colorPalette = {
 		colorFrom: redPalette[0],
 		colorTo: redPalette[1],
@@ -721,6 +750,9 @@ function drawRightArm() {
 	rightArmCoordinates.yControl2 = rightArmCoordinates.yControl2 + getRandomInt(-4, 4);
 
 	// drawing points to give some depth
+
+	// the last params chosen so to have an animation that looks good (no special logic here)
+	// but renders impossible to rather use calls in a loop
 	colorPalette.strokeWeight = 4;
 	drawPoints(rightArmCoordinates.xBegin,
 		rightArmCoordinates.yBegin,
@@ -747,6 +779,9 @@ function drawRightArm() {
 	stroke(backgroundBluesPalette[0]);
 
 	// draw shaping line
+
+	// the last params chosen so to have an animation that looks good (no special logic here)
+	// but renders impossible to rather use calls in a loop
 	let lineSteps = 12;
 	if (mainMusicPlaying) {
 		let level = amplitude.getLevel();
@@ -814,6 +849,9 @@ function drawLeftArm() {
 	leftArmCoordinates.yControl2 = leftArmCoordinates.yControl2 + getRandomInt(-4, 4);
 
 	// drawing points to give some depth
+
+	// the last params chosen so to have an animation that looks good (no special logic here)
+	// but renders impossible to rather use calls in a loop
 	colorPalette.colorLerp = 0.5;
 	colorPalette.strokeWeight = 1;
 	drawPoints(leftArmCoordinates.xBegin, leftArmCoordinates.yBegin,
@@ -839,6 +877,9 @@ function drawLeftArm() {
 		300, 30, colorPalette, 1);
 
 	// draw shaping line
+
+	// the last params chosen so to have an animation that looks good (no special logic here)
+	// but renders impossible to rather use calls in a loop
 	colorPalette.colorLerp = 0;
 	colorPalette.strokeWeight = 4;
 	drawNoiseLine(leftArmCoordinates.xBegin, leftArmCoordinates.yBegin,
@@ -857,13 +898,13 @@ function drawLeftArm() {
 
 // draws points (for the dancer's body)
 function drawPoints(x1, y1, x2, y2, x3, y3, x4, y4, steps, maxDistance, palette, side = -1) {
-	if (palette && palette.strokeWeight) {
+	if (palette && palette.strokeWeight) { // uses a palette if defined
 		strokeWeight(palette.strokeWeight);
 	} else {
 		strokeWeight(2);
 	}
 
-	for (let i = 0; i <= steps; i++) {
+	for (let i = 0; i <= steps; i++) { // draw a <<steps>> amount of points</steps>
 		let noiseFactor = noise(i);
 		let distance = noiseFactor * maxDistance;
 		let t = i / steps;
@@ -871,7 +912,8 @@ function drawPoints(x1, y1, x2, y2, x3, y3, x4, y4, steps, maxDistance, palette,
 		let y = bezierPoint(y1, y2, y3, y4, t);
 		let tx = bezierTangent(x1, x2, x3, x4, t);
 		let ty = bezierTangent(y1, y2, y3, y4, t);
-		let a = atan2(ty, tx);
+
+		let a = atan2(ty, tx); // using the tangent to the bezier curve to draw points
 
 		if (side < 0) {
 			a -= HALF_PI;
@@ -879,15 +921,19 @@ function drawPoints(x1, y1, x2, y2, x3, y3, x4, y4, steps, maxDistance, palette,
 			a += HALF_PI;
 		}
 
-		if (palette && palette.colorLerp) {
+		if (palette && palette.colorLerp) { // color lerp
 			stroke(lerpColor(palette.colorFrom, palette.colorTo, palette.colorLerp));
 		} else {
 			stroke(lerpColor(palette.colorFrom, palette.colorTo, noiseFactor));
 		}
+
+		// point coordinates depends on the bezier curve it is linked to
 		let currentPoint = {
 			x: cos(a) * distance + x,
 			y: sin(a) * distance + y
 		};
+
+		// draws the point
 		point(currentPoint.x, currentPoint.y);
 	}
 
@@ -896,7 +942,7 @@ function drawPoints(x1, y1, x2, y2, x3, y3, x4, y4, steps, maxDistance, palette,
 
 // draws noisy line that is a dancer body part
 function drawNoiseLine(x1, y1, x2, y2, x3, y3, x4, y4, steps, maxDistance, palette, fuzz = 1, side = -1) {
-	if (palette && palette.strokeWeight) {
+	if (palette && palette.strokeWeight) { // use palette if set
 		strokeWeight(palette.strokeWeight);
 	} else {
 		strokeWeight(4);
@@ -908,9 +954,12 @@ function drawNoiseLine(x1, y1, x2, y2, x3, y3, x4, y4, steps, maxDistance, palet
 		y: y1
 	};
 	for (let i = 0; i <= steps; i++) {
+		// framecount to have every time "different noise"
 		let noiseFactor = noise(fuzz + i + frameCount * side);
 		let distance = (noiseFactor - 0.5) * maxDistance;
 		let t = i / steps;
+
+		// use bezier curve to find the point's coordinate
 		let x = bezierPoint(x1, x2, x3, x4, t);
 		let y = bezierPoint(y1, y2, y3, y4, t);
 		let tx = bezierTangent(x1, x2, x3, x4, t);
@@ -926,10 +975,14 @@ function drawNoiseLine(x1, y1, x2, y2, x3, y3, x4, y4, steps, maxDistance, palet
 		if (palette && palette.colorLerp) {
 			stroke(lerpColor(palette.colorFrom, palette.colorTo, palette.colorLerp));
 		}
+
+		// new "end point" depends on bezier curve (so using tangent and trigonometry here)
 		currentPoint = {
 			x: cos(a) * distance + x,
 			y: sin(a) * distance + y
 		};
+
+		// now that we have the new point, link it to the previous one to draw the noisy line
 		line(previousPoint.x, previousPoint.y, currentPoint.x, currentPoint.y);
 		previousPoint = currentPoint;
 	}
@@ -942,6 +995,9 @@ function drawNoiseLine(x1, y1, x2, y2, x3, y3, x4, y4, steps, maxDistance, palet
 
 // draws noisy line depending on playing sound that is a dancer body part 
 function drawNoiseLineWithSoundAmplitude(x1, y1, x2, y2, x3, y3, x4, y4, steps, maxDistance, palette, fuzz = 1, side = -1) {
+	// logic similar to drawNoiseLine...
+
+	// Except that some parameters will also depend on the sound intensity!
 	let level = amplitude.getLevel();
 
 	if(palette && !palette.noStrokeWeightChange) {
@@ -995,7 +1051,7 @@ function drawNoiseLineWithSoundAmplitude(x1, y1, x2, y2, x3, y3, x4, y4, steps, 
 }
 
 // draws a full color background (fallback)
-function drawBackground() {
+function drawBackground() { // fallback background for quicker loading when developing/debugging
 	fill(lerpColor(backgroundGeneralPalette[0], backgroundGeneralPalette[1], 0.35));
 	strokeWeight(5);
 	stroke(lerpColor(backgroundGeneralPalette[0], backgroundGeneralPalette[1], 0.35));
@@ -1040,6 +1096,7 @@ function drawBottomForeground() {
 		let x1 = 0;
 		let x3 = getRandomInt(50, 150);
 		while (x1 < 1100) {
+			// create some random spikes
 			x2 = getRandomInt(x1 - 100, x3 - 140);
 			y2 = getRandomInt(950, 760);
 			backgroundTriangleCoordinates.push([x1, 1000, x2, y2, x3, 1000,
@@ -1142,6 +1199,7 @@ function drawBottomForeground() {
 		}
 	}
 
+	// draw spikes
 	for (let i = 0; i < backgroundTriangleCoordinates.length; i++) {
 		let currentTriangle = backgroundTriangleCoordinates[i];
 		fill(currentTriangle[6]);
@@ -1273,11 +1331,6 @@ function drawBottomSpikesForeground() {
 	noFill();
 }
 
-// get random integer in [min, max] range
-function getRandomInt(min, max) {
-	return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
 // multiplier for soundwave while music is playing
 function getMusicAmplitudeMultiplierForXPosition(currentX) {
 	let amplitudeMultiplier;
@@ -1326,6 +1379,7 @@ function getMusicAmplitudeMultiplierForXPosition(currentX) {
 
 	return amplitudeMultiplier;
 }
+
 // draw lines following music
 function drawMusicLines() {
 	// non-moving line parts
@@ -1443,4 +1497,9 @@ function drawMusicLines() {
 	// close moving line
 	stroke(backgroundBluesPalette[0]);
 	line(previousX, previousY, Math.min(currentX, xRightEnd), yAltitude);
+}
+
+// get random integer in [min, max] range
+function getRandomInt(min, max) {
+	return Math.floor(Math.random() * (max - min + 1)) + min;
 }
